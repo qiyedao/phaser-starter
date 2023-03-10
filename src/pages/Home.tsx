@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { config } from '../stars/preload';
 
 export default () => {
-    return <div>home123</div>;
+    useEffect(() => {
+        const game = new Phaser.Game(config);
+    }, []);
+    return <div></div>;
 };

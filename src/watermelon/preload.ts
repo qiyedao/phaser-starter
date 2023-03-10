@@ -1,6 +1,6 @@
 import 'phaser';
 
-const CDN = 'assets';
+const CDN = 'assets/watermelon';
 
 export default class Preload extends Phaser.Scene {
     constructor() {

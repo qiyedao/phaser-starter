@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import Preload from '../preload';
-import Demo from '../game';
+import Preload from '../watermelon/preload';
+import Demo from '../watermelon/game';
 
 export default () => {
     useEffect(() => {
