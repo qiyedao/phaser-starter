@@ -11,6 +11,8 @@ export default class Preload extends Phaser.Scene {
     private stars: any;
     private score: number = 0;
     private scoreText: any = '';
+    private bombs: any;
+    private gameOver = false;
     preload() {
         console.log('preload');
 
@@ -22,10 +24,6 @@ export default class Preload extends Phaser.Scene {
     }
     create() {
         console.log('create');
-        this.scoreText = this.add.text(16, 16, 'score: 0', {
-            fontSize: '32px',
-            color: '#000'
-        });
 
         this.add.image(400, 300, 'sky');
         this.platforms = this.physics.add.staticGroup();
@@ -34,6 +32,10 @@ export default class Preload extends Phaser.Scene {
         this.platforms.create(50, 250, 'ground');
         this.platforms.create(750, 220, 'ground');
         this.player = this.physics.add.sprite(100, 50, 'dude');
+        this.scoreText = this.add.text(16, 16, 'score: 0', {
+            fontSize: '32px',
+            color: '#000'
+        });
         this.player.setBounce(0.2);
         this.player.body.setGravityY(300);
 
@@ -70,9 +72,36 @@ export default class Preload extends Phaser.Scene {
         this.physics.add.collider(this.stars, this.platforms);
 
         this.physics.add.overlap(this.player, this.stars, this.collectStar, undefined, this);
+        this.bombs = this.physics.add.group();
+
+        this.physics.add.collider(this.bombs, this.platforms);
+
+        this.physics.add.collider(this.player, this.bombs, this.hitBomb, undefined, this);
     }
     collectStar(player: any, star: any) {
         star.disableBody(true, true);
+        this.score += 10;
+        this.scoreText.setText('score:' + this.score);
+        var x = player.x < 400 ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+
+        var bomb = this.bombs.create(x, 16, 'bomb');
+        bomb.setBounce(1);
+        bomb.setCollideWorldBounds(true);
+        bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+        if (this.stars.countActive(true) === 0) {
+            this.stars.children.iterate(function (child: any) {
+                child.enableBody(true, child.x, 0, true, true);
+            });
+        }
+    }
+    hitBomb(player: any, bomb: any) {
+        this.physics.pause();
+
+        player.setTint(0xff0000);
+
+        player.anims.play('turn');
+
+        this.gameOver = true;
     }
     update() {
         if (this.cursors.left.isDown) {
