@@ -6,9 +6,16 @@ export default class Preload extends Phaser.Scene {
     constructor() {
         super('preload');
     }
+    private progressText!: Phaser.GameObjects.Text;
     preload() {
-        this.load.on('progress', function (value: any) {
+        this.progressText = this.add.text(
+            window.innerWidth / 2,
+            window.innerHeight / 2,
+            'progress' + 0 + '%'
+        );
+        this.load.on('progress', (value: any) => {
             console.log(value);
+            this.progressText.setText('progress' + value * 100 + '%');
         });
         this.load.on('complete', function () {
             console.log('file complete');
@@ -26,6 +33,7 @@ export default class Preload extends Phaser.Scene {
         this.load.atlas('success', CDN + '/confi.png', CDN + '/confi.json');
     }
     create() {
+        this.progressText.destroy();
         this.scene.launch('demo');
     }
 }

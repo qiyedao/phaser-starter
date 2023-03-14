@@ -21,8 +21,8 @@ export default class Demo extends Phaser.Scene {
     create() {
         //设置边界
         this.matter.world.setBounds();
-
         //添加地面
+
         const groundSprite = this.add.tileSprite(
             WINDOW_WIDTH / 2,
             WINDOW_HEIGHT - 5 * Ratio,
@@ -30,6 +30,7 @@ export default class Demo extends Phaser.Scene {
             127,
             'ground'
         );
+
         this.matter.add.gameObject(groundSprite, { isStatic: true });
 
         //初始化一个水果
@@ -83,6 +84,11 @@ export default class Demo extends Phaser.Scene {
                     from: 0,
                     to: 1
                 },
+                scale: {
+                    from: SCALE,
+                    to: 2
+                },
+
                 repeat: 3,
                 duration: 300,
                 onComplete: () => {
@@ -114,10 +120,12 @@ export default class Demo extends Phaser.Scene {
                     }
                 });
             }
+            this.createCircle(point.x as number, point.y as number, 20, 0xffffff);
         });
 
         const onCollisionStart = (event: any) => {
             const paris = event.source.pairs.list;
+
             paris.forEach((pair: any) => {
                 const { bodyA, bodyB } = pair;
                 const same = bodyA.label === bodyB.label && bodyA.label !== '11';
@@ -187,6 +195,43 @@ export default class Demo extends Phaser.Scene {
             duration: 200
         });
         return fruit;
+    }
+    createCircle(x: number, y: number, radius: number, fillColor?: number, fillAlpha?: number) {
+        const circle = this.add.circle(x, y, radius, fillColor);
+        this.matter.add.gameObject(circle, {
+            isStatic: true,
+            isSensor: true,
+            circleRadius: 20,
+            label: 'point',
+            onCollideActiveCallback: (pair: any) => {
+                console.log('point', pair);
+                const { bodyA, bodyB } = pair;
+                if (bodyA.label == 'point') {
+                    bodyA.gameObject.alpha = 0;
+
+                    bodyA.destroy();
+                }
+                if (bodyB.label == 'point') {
+                    bodyB.gameObject.alpha = 0;
+                    bodyB.destroy();
+                }
+            }
+        });
+        this.tweens.add({
+            targets: circle,
+            alpha: {
+                from: 1,
+                to: 0
+            },
+            scale: {
+                from: 1.5,
+                to: 0
+            },
+            duration: 500,
+            onComplete: () => {
+                circle.setVisible(false);
+            }
+        });
     }
     onCompose(
         bodyA: {
@@ -260,12 +305,12 @@ export default class Demo extends Phaser.Scene {
         const config = {
             frame: frame,
             x: { min: 0, max: WINDOW_WIDTH },
-            speed: { min: 250, max: 300 },
+            speed: { min: 5, max: 10 },
             gravityY: 400,
-            lifespan: 4000,
-            quantity: 2,
+            lifespan: 10000,
+            quantity: 1,
             y: WINDOW_HEIGHT / 4,
-            maxParticles: 100,
+            maxParticles: 1,
             angle: { min: 220, max: 320 },
             scale: { start: 0.5, end: 0.8 }
         };
