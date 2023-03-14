@@ -5,13 +5,14 @@ export default class Preload extends Phaser.Scene {
     constructor() {
         super('preload');
     }
-    private platforms: any;
-    private player: any;
-    private cursors: any;
-    private stars: any;
+    private platforms!: Phaser.Physics.Arcade.StaticGroup;
+    private player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+    private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+    private stars!: Phaser.Physics.Arcade.Group;
     private score: number = 0;
-    private scoreText: any = '';
-    private bombs: any;
+    private scoreText!: Phaser.GameObjects.Text;
+    private bombs!: Phaser.Physics.Arcade.Group;
+    private bg!: Phaser.GameObjects.TileSprite;
     private gameOver = false;
     preload() {
         console.log('preload');
@@ -25,7 +26,9 @@ export default class Preload extends Phaser.Scene {
     create() {
         console.log('create');
 
-        this.add.image(400, 300, 'sky');
+        // this.add.image(400, 300, 'sky');
+        this.bg = this.add.tileSprite(400, 300, 800, 600, 'sky');
+        // this.bg.setOrigin(0, 0);
         this.platforms = this.physics.add.staticGroup();
         this.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
         this.platforms.create(600, 400, 'ground');
@@ -40,6 +43,7 @@ export default class Preload extends Phaser.Scene {
         this.player.body.setGravityY(300);
 
         this.player.setCollideWorldBounds(true);
+
         this.anims.create({
             key: 'left',
             frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
@@ -66,11 +70,15 @@ export default class Preload extends Phaser.Scene {
             setXY: { x: 12, y: 0, stepX: 70 }
         });
 
-        this.stars.children.iterate(function (child: any) {
-            child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+        this.stars.children.iterate(function (child) {
+            child.setBounceY(Phaser.Math.FloatBetween(0.5, 0.8));
+            child.setBounceX(Phaser.Math.FloatBetween(0.5, 0.8));
+            child.setVelocity(Phaser.Math.Between(-20, 20), 20);
+
+            child.setCollideWorldBounds(true);
         });
         this.physics.add.collider(this.stars, this.platforms);
-
+        this.physics.add.collider(this.stars, this.bombs);
         this.physics.add.overlap(this.player, this.stars, this.collectStar, undefined, this);
         this.bombs = this.physics.add.group();
 
@@ -78,6 +86,7 @@ export default class Preload extends Phaser.Scene {
 
         this.physics.add.collider(this.player, this.bombs, this.hitBomb, undefined, this);
     }
+
     collectStar(player: any, star: any) {
         star.disableBody(true, true);
         this.score += 10;
@@ -104,6 +113,7 @@ export default class Preload extends Phaser.Scene {
         this.gameOver = true;
     }
     update() {
+        this.bg.tilePositionY += 1;
         if (this.cursors.left.isDown) {
             this.player.setVelocityX(-160);
 
