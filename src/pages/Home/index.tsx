@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import Preload from '../stars/preload';
+import styles from './index.module.less';
+import Side from '../../components/Side';
+import Preload from '../../stars/preload';
+import classNames from 'classnames';
+
 type scaleMode = 'FIT' | 'SMOOTH';
 
 const DEFAULT_WIDTH_PC: number = 1024;
@@ -18,7 +22,7 @@ let SCALE_MODE: scaleMode = 'SMOOTH'; // FIT OR SMOOTH
 const SIDE_WIDTH = 300;
 export default () => {
     const [isPC, setIsPC] = useState(false);
-    useEffect(() => {
+    const initGame = () => {
         const config = {
             backgroundColor: '#ffffff',
 
@@ -64,21 +68,17 @@ export default () => {
         const resize = () => {
             const w = window.innerWidth;
             const h = window.innerHeight;
-
             let width = DEFAULT_WIDTH;
             let height = DEFAULT_HEIGHT;
             let maxWidth = MAX_WIDTH;
             let maxHeight = MAX_HEIGHT;
             let scaleMode = SCALE_MODE;
-
             let scale = Math.min(w / width, h / height);
             let newWidth = Math.min(w / scale, maxWidth);
             let newHeight = Math.min(h / scale, maxHeight);
-
             let defaultRatio = DEFAULT_WIDTH / DEFAULT_HEIGHT;
             let maxRatioWidth = MAX_WIDTH / DEFAULT_HEIGHT;
             let maxRatioHeight = DEFAULT_WIDTH / MAX_HEIGHT;
-
             // smooth scaling
             let smooth = 1;
             if (scaleMode === 'SMOOTH') {
@@ -98,36 +98,28 @@ export default () => {
                         maxSmoothScale;
                 }
             }
-
-            // resize the game
             game.scale.resize(newWidth * smooth, newHeight * smooth);
-
-            // scale the width and height of the css
-            if (w > 1024) {
+            if (w > DEFAULT_WIDTH_PC) {
                 game.canvas.style.width = newWidth * scale - SIDE_WIDTH + 'px';
             } else {
                 game.canvas.style.width = newWidth * scale + 'px';
             }
-
             game.canvas.style.height = newHeight * scale + 'px';
-
-            // center the game with css margin
-            // game.canvas.style.marginTop = `${(h - newHeight * scale) / 2}px`
-            // game.canvas.style.marginLeft = `${(w - newWidth * scale) / 2}px`
+            game.canvas.style.marginTop = `${(h - newHeight * scale) / 2}px`;
+            game.canvas.style.marginLeft = `${(w - newWidth * scale) / 2}px`;
         };
         window.addEventListener('resize', event => {
             resize();
         });
         resize();
+    };
+    useEffect(() => {
+        initGame();
     }, []);
 
     return (
-        <div id="game">
-            {isPC && (
-                <div id="side" style={{ width: SIDE_WIDTH }}>
-                    大屏侧边栏
-                </div>
-            )}
+        <div id="game" className={classNames(styles.game)}>
+            {isPC && <Side width={SIDE_WIDTH} />}
         </div>
     );
 };

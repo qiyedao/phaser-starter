@@ -92,7 +92,7 @@ export default class Preload extends Phaser.Scene {
             setXY: { x: 12, y: 0, stepX: 70 }
         });
 
-        this.stars.children.iterate(function (child) {
+        this.stars.children.iterate(function (child: any) {
             child.setBounceY(Phaser.Math.FloatBetween(0.5, 0.8));
             child.setBounceX(Phaser.Math.FloatBetween(0.5, 0.8));
             child.setVelocity(Phaser.Math.Between(-20, 20), 20);
@@ -154,10 +154,15 @@ export default class Preload extends Phaser.Scene {
             this.sky.setScale(Math.max(this.cameras.main.height / 600, 1));
         };
 
-        this.scale.on('resize', (gameSize, baseSize, displaySize, resolution) => {
-            this.cameras.resize(gameSize.width, gameSize.height);
-            resize();
-        });
+        this.scale.on(
+            'resize',
+            (gameSize: any, baseSize: any, displaySize: any, resolution: any) => {
+                console.log(gameSize, baseSize, displaySize, resolution);
+
+                this.cameras.resize(gameSize.width, gameSize.height);
+                resize();
+            }
+        );
         resize();
     }
 
