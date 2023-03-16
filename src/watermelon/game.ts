@@ -20,6 +20,7 @@ export default class Demo extends Phaser.Scene {
 
     create() {
         //设置边界
+
         this.matter.world.setBounds();
         //添加地面
 

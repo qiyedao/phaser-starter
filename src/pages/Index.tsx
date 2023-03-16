@@ -3,12 +3,15 @@ import Preload from '../watermelon/preload';
 import Demo from '../watermelon/game';
 
 export default () => {
+    let game: Phaser.Game;
     useEffect(() => {
         const config = {
             canvas: document.getElementById('game') as HTMLCanvasElement,
             type: Phaser.WEBGL,
             backgroundColor: '#ffe8a3', //改为游戏的背景颜色
             mode: Phaser.Scale.FIT, // 缩放模式
+            width: window.innerWidth,
+            height: window.innerHeight,
             physics: {
                 default: 'matter', //使用matterjs物理引擎
                 matter: {
@@ -18,12 +21,11 @@ export default () => {
                     debug: true //开启调试
                 }
             },
-            width: window.innerWidth,
-            height: window.innerHeight,
+
             scene: [Preload, Demo]
         };
-        const game = new Phaser.Game(config);
-        console.log('game', game);
+        game = new Phaser.Game(config);
     }, []);
+
     return <canvas id="game"></canvas>;
 };
