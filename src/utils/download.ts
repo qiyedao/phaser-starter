@@ -1,11 +1,7 @@
-export const handleDownloadFile = async (
-    data: string | Blob | MediaSource,
-    filename: string,
-    type = 'blob'
-) => {
+export const handleDownloadFile = async (data: any, filename: string, type = 'blob') => {
     if (type == 'blob' || type == 'link') {
         try {
-            let href: string = '';
+            let href: any = '';
 
             if (type == 'blob') {
                 href = window.URL.createObjectURL(data);
