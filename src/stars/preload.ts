@@ -1,215 +1,177 @@
 import 'phaser';
-const CDN = 'assets/stars/';
+import Pockets from './Pockets';
 
+//初始化图片
+let imgjishi = 'assets/red/img/daojishi.png';
+let bgPlan = 'assets/red/img/bg-plan.jpg';
+let bgRainer = 'assets/red/img/bg-rainer.jpg';
+let redpacket = 'assets/red/img/redpacket.png';
+let close = 'assets/red/img/close.png';
+let dialogExit = 'assets/red/img/dialog-exit.png';
+let buttonCancel = 'assets/red/img/button-cancel.png';
+let buttonExit = 'assets/red/img/button-exit.png';
+let openRedpacket = 'assets/red/img/open-redpacket.png';
+let open = 'assets/red/img/open.png';
+let redpacketResult = 'assets/red/img/redpacket-result.png';
+let buttonUseTicket = 'assets/red/img/button-use-ticket.png';
+let buttonContinue = 'assets/red/img/button-continue.png';
+let cursorAnimation = 'assets/red/img/cursor-animation.png';
+let ids = [0, 1, 2, 3, 4, 5];
+let redpackets = [
+    '全场优惠50元',
+    '20元代金券',
+    '全场优惠50元',
+    '20元代金券',
+    '全场优惠50元',
+    '20元代金券'
+];
+let time = 5;
+let getIds = [];
+let radio = document.documentElement.clientWidth / 375;
+let e;
+let config = {
+    selfPool: 40,
+    selfPic: 'redpacket',
+    rate: 0.5,
+    maxSpeed: 1200,
+    minSpeed: 400,
+    max: 95
+};
+function rfuc(n) {
+    return n * radio;
+}
 export default class Preload extends Phaser.Scene {
     scoreTextSafeArea!: Phaser.GameObjects.Text;
+    cursorPointer: Phaser.GameObjects.Sprite;
+    daojishi: Phaser.GameObjects.Sprite;
+    bgRainer: any;
+    leftTimeText: Phaser.GameObjects.Text;
+    leftTime: number;
+    timerEventCountDown: Phaser.Time.TimerEvent;
+    timerEventPocket: Phaser.Time.TimerEvent;
+    modal: Phaser.GameObjects.Graphics;
     constructor() {
         super('preload');
     }
-    private platforms!: Phaser.Physics.Arcade.StaticGroup;
-    private player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
-    private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-    private stars!: Phaser.Physics.Arcade.Group;
-    private score: number = 0;
-    private scoreText!: Phaser.GameObjects.Text;
-    private bombs!: Phaser.Physics.Arcade.Group;
-    private sky!: Phaser.GameObjects.TileSprite;
-    private gameOver = false;
+    private bg: any;
+    private redGroups!: Phaser.Physics.Arcade.Group;
+
     preload() {
         console.log('preload');
 
-        this.load.image('sky', CDN + 'sky.png');
-        this.load.image('ground', CDN + 'platform.png');
-        this.load.image('star', CDN + 'star.png');
-        this.load.image('bomb', CDN + 'bomb.png');
-        this.load.spritesheet('dude', CDN + 'dude.png', { frameWidth: 32, frameHeight: 48 });
+        this.load.spritesheet('daojishi', imgjishi, { frameWidth: 250, frameHeight: 120 });
+        this.load.image('bgPlan', bgPlan);
+        this.load.image('bgRainer', bgRainer);
+        this.load.spritesheet('redpacket', redpacket, { frameWidth: 144, frameHeight: 173 });
+        this.load.image('close', close);
+        this.load.image('dialogExit', dialogExit);
+        this.load.image('buttonExit', buttonExit);
+        this.load.image('buttonCancel', buttonCancel);
+        this.load.image('openRedpacket', openRedpacket);
+        this.load.image('open', open);
+        this.load.image('redpacketResult', redpacketResult);
+        this.load.image('buttonContinue', buttonContinue);
+        this.load.image('buttonUseTicket', buttonUseTicket);
+        this.load.spritesheet('cursorAnimation', cursorAnimation, {
+            frameWidth: 73,
+            frameHeight: 108
+        });
     }
     create() {
-        console.log('create');
-        const world = {
-            width: 1600, // the width of 2 ground platforms
-            height: 800 // the hight of the game
-        };
+        console.log('this.game', this, this.game.config.width, this.game.config.height);
 
-        // the width and height of the world map
-        this.cameras.main.setBounds(0, 0, world.width, world.height);
-        this.physics.world.setBounds(0, 0, world.width, world.height);
-
-        // this.add.image(400, 300, 'sky');
-        // this.sky = this.add.tileSprite(400, 300, 800, 600, 'sky');
-        // this.sky.setOrigin(0, 0);
-        // this.platforms = this.physics.add.staticGroup();
-        // this.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-        // this.platforms.create(600, 400, 'ground');
-        // this.platforms.create(50, 250, 'ground');
-        // this.platforms.create(750, 220, 'ground');
-        this.sky = this.add
-            .tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sky')
-            .setOrigin(0)
-            // take the full height
-            .setScale(Math.max(this.cameras.main.height / 600, 1))
-            .setScrollFactor(0);
-
-        // add all platforms
-        this.platforms = this.physics.add.staticGroup();
-        this.platforms.create(400, 800, 'ground').setScale(2).refreshBody().setOrigin(0.5, 1);
-        this.platforms.create(1200, 800, 'ground').setScale(2).refreshBody().setOrigin(0.5, 1);
-        this.platforms.create(600, 632, 'ground');
-        this.platforms.create(50, 482, 'ground');
-        this.platforms.create(750, 453, 'ground');
-        this.platforms.create(1150, 312, 'ground');
-        this.platforms.refresh();
-        this.player = this.physics.add.sprite(100, 50, 'dude');
-
-        this.player.setBounce(0.2);
-        this.player.body.setGravityY(300);
-
-        this.player.setCollideWorldBounds(true);
-
-        this.anims.create({
-            key: 'left',
-            frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
-            frameRate: 10,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'turn',
-            frames: [{ key: 'dude', frame: 4 }],
-            frameRate: 20
-        });
-
-        this.anims.create({
-            key: 'right',
-            frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
-            frameRate: 10,
-            repeat: -1
-        });
-        this.physics.add.collider(this.player, this.platforms);
-        this.cursors = this.input.keyboard.createCursorKeys();
-        this.stars = this.physics.add.group({
-            key: 'star',
-            repeat: 11,
-            setXY: { x: 12, y: 0, stepX: 70 }
-        });
-
-        this.stars.children.iterate(function (child: any) {
-            child.setBounceY(Phaser.Math.FloatBetween(0.5, 0.8));
-            child.setBounceX(Phaser.Math.FloatBetween(0.5, 0.8));
-            child.setVelocity(Phaser.Math.Between(-20, 20), 20);
-
-            child.setCollideWorldBounds(true);
-        });
-
-        // draw safe area
-        let safeArea = this.add
-            .rectangle(
-                this.cameras.main.width / 2 - +this.game.config.width / 2,
-                this.cameras.main.height - +this.game.config.height,
-                +this.game.config.width,
-                +this.game.config.height,
-                0xff00ff,
-                0.08
-            )
-            .setStrokeStyle(1, 0xffffff, 0.25)
-            .setOrigin(0)
-            .setDepth(2)
-            .setScrollFactor(0);
-        // this is fixed to the safeArea
-        this.scoreTextSafeArea = this.add
-            .text(safeArea.x + 16, safeArea.y + 16, 'score: 0', { fontSize: '32px', color: '#000' })
-            .setOrigin(0)
-            .setScrollFactor(0);
-        // this is fixed to the safeArea
-        this.scoreText = this.add
-            .text(16, 16, 'score: 0', { fontSize: '32px', color: '#000' })
-            .setOrigin(0)
-            .setScrollFactor(0);
-        this.physics.add.collider(this.stars, this.platforms);
-        this.physics.add.collider(this.stars, this.bombs);
-        this.physics.add.overlap(this.player, this.stars, this.collectStar, undefined, this);
-        this.bombs = this.physics.add.group();
-
-        this.physics.add.collider(this.bombs, this.platforms);
-
-        this.physics.add.collider(this.player, this.bombs, this.hitBomb, undefined, this);
-
-        // camera should follow the player
-        this.cameras.main.startFollow(this.player, true);
-
-        // the resize function
-        const resize = () => {
-            // update position of safe area
-            safeArea.x = this.cameras.main.width / 2 - +this.game.config.width / 2;
-            safeArea.y = this.cameras.main.height - +this.game.config.height;
-
-            // adjust the score text
-            this.scoreTextSafeArea.x = safeArea.x + 16;
-            this.scoreTextSafeArea.y = safeArea.y + 16;
-            this.scoreText.x = 16;
-            this.scoreText.y = 16;
-
-            // adjust sky
-            this.sky.width = this.cameras.main.width;
-            this.sky.height = this.cameras.main.height;
-            this.sky.setScale(Math.max(this.cameras.main.height / 600, 1));
-        };
-
-        this.scale.on(
-            'resize',
-            (gameSize: any, baseSize: any, displaySize: any, resolution: any) => {
-                console.log(gameSize, baseSize, displaySize, resolution);
-
-                this.cameras.resize(gameSize.width, gameSize.height);
-                resize();
-            }
+        this.bg = this.add.tileSprite(0, 0, 719, 1280, 'bgPlan').setScale(1).setOrigin(0.215);
+        this.cursorPointer = this.add.sprite(
+            this.game.config.width / 2,
+            this.game.config.height / 2,
+            'cursorAnimation'
         );
-        resize();
+        this.anims.create({
+            key: 'cursorAnimation',
+            frames: this.anims.generateFrameNumbers('cursorAnimation', { start: 0, end: 1 }),
+            frameRate: 2,
+            repeat: -1
+        });
+        this.cursorPointer.anims.play('cursorAnimation', true);
+
+        this.daojishi = this.add
+            .sprite(this.game.config.width / 2, this.game.config.height / 2 - 300, 'daojishi')
+            .setScale(0.5);
+        this.anims.create({
+            key: 'daojishi',
+            frames: this.anims.generateFrameNumbers('daojishi', { start: 0, end: 3 }),
+            frameRate: 1,
+            repeat: 0
+        });
+        this.daojishi.on(
+            Phaser.Animations.Events.ANIMATION_COMPLETE,
+            () => {
+                this.startGame();
+            },
+            this
+        );
+        this.daojishi.anims.play('daojishi');
     }
-
-    collectStar(player: any, star: any) {
-        star.disableBody(true, true);
-        this.score += 10;
-        this.scoreText.setText('score:' + this.score);
-        this.scoreTextSafeArea.setText('Score: ' + this.score);
-        var x = player.x < 400 ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
-
-        // var bomb = this.bombs.create(x, 16, 'bomb');
-        // bomb.setBounce(1);
-        // bomb.setCollideWorldBounds(true);
-        // bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
-        // if (this.stars.countActive(true) === 0) {
-        //     this.stars.children.iterate(function (child: any) {
-        //         child.enableBody(true, child.x, 0, true, true);
-        //     });
-        // }
-    }
-    hitBomb(player: any, bomb: any) {
-        this.physics.pause();
-
-        player.setTint(0xff0000);
-
-        player.anims.play('turn');
-
-        this.gameOver = true;
-    }
-    update() {
-        // this.sky.tilePositionY += 1;
-        if (this.cursors.left.isDown) {
-            this.player.setVelocityX(-300);
-
-            this.player.anims.play('left', true);
-        } else if (this.cursors.right.isDown) {
-            this.player.setVelocityX(300);
-
-            this.player.anims.play('right', true);
-        } else {
-            this.player.setVelocityX(0);
-
-            this.player.anims.play('turn');
-        }
-
-        if (this.cursors.up.isDown && this.player.body.touching.down) {
-            this.player.setVelocityY(-800);
+    refreshTime() {
+        this.leftTime--;
+        var tem = this.leftTime;
+        this.leftTimeText.setText(tem);
+        if (this.leftTime === 0) {
+            this.scene.pause('preload');
+            this.createModal();
         }
     }
+    createPockets(num: number) {
+        for (let i = 0; i < num; i++) {
+            this.redGroups.firePocket(
+                Phaser.Math.FloatBetween(0, window.innerWidth),
+                0,
+                Phaser.Math.FloatBetween(0, -100),
+                Phaser.Math.FloatBetween(100, 300)
+            );
+        }
+    }
+    createModal() {
+        //背景
+        this.modal = this.add.graphics();
+        this.modal.fillStyle(0x000000, 0.5).fillRect(0, 0, window.innerWidth, window.innerHeight);
+    }
+    startGame() {
+        this.daojishi.setVisible(false);
+        this.bgRainer = this.add
+            .tileSprite(0, 0, 719, 1280, 'bgRainer')
+            .setScale(1)
+            .setOrigin(0.215);
+        this.leftTime = time;
+        this.leftTimeText = this.add.text(this.game.config.width - 50, 0, this.leftTime, {
+            fill: '#FFF',
+            fontSize: '40px',
+            fontWeight: 'bolder'
+        });
+
+        this.redGroups = new Pockets(this);
+        this.createPockets(3);
+
+        this.time.removeAllEvents();
+        this.timerEventCountDown = this.time.addEvent({
+            delay: 1000,
+            timeScale: 1.0,
+            loop: true,
+            callback: e => {
+                this.refreshTime();
+                console.log(e, 'timerEventCountDown', new Date().toLocaleTimeString());
+            }
+        });
+        this.timerEventPocket = this.time.addEvent({
+            delay: 300,
+            timeScale: 0.3,
+            loop: true,
+            callback: e => {
+                this.createPockets(3);
+            }
+        });
+
+        this.leftTimeText.setScale(rfuc(1));
+    }
+    update() {}
 }
