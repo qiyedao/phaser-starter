@@ -1,6 +1,6 @@
 import 'phaser';
 
-class Pockets extends Phaser.Physics.Arcade.Group {
+class Packets extends Phaser.Physics.Arcade.Group {
     constructor(scene) {
         super(scene.physics.world, scene);
 
@@ -16,21 +16,22 @@ class Pockets extends Phaser.Physics.Arcade.Group {
         });
     }
 
-    firePocket(x, y, velocityX, velocityY) {
-        let pocket = this.getFirstDead(false);
+    firePacket(x, y, velocityX, velocityY) {
+        let packet = this.getFirstDead(false);
 
-        if (pocket) {
-            pocket.body.reset(x, y);
+        if (packet) {
+            packet.body.reset(x, y);
             if (velocityX) {
-                pocket.setVelocityX(velocityX);
+                packet.setVelocityX(velocityX);
             }
             if (velocityY) {
-                pocket.setVelocityY(velocityX);
+                packet.setVelocityY(velocityX);
             }
-            pocket.setVisible(true);
 
-            pocket.setActive(true);
+            packet.setVisible(true);
+
+            packet.setActive(true);
         }
     }
 }
-export default Pockets;
+export default Packets;
