@@ -143,7 +143,15 @@ export default class Preload extends Phaser.Scene {
         this.redpacketResult = this.add
             .sprite(rfuc(0), rfuc(130), 'redpacketResult')
             .setOrigin(0, 0)
-            .setScale(0.5);
+            .setScale(0.5)
+            .setInteractive();
+        console.log('this.redpacketResult', this.redpacketResult);
+
+        this.redpacketResult.on('pointerdown', e => {
+            console.log(e);
+
+            alert(123);
+        });
         // this.redpacketResult.setOrigin(0, 0).setScale(0.5).setX(0);
 
         this.ticketText = this.add.text(0, rfuc(338), text, {
@@ -184,7 +192,7 @@ export default class Preload extends Phaser.Scene {
             this.createPacketModal(text);
         } else {
             sprite.setVelocity(0, 0);
-            sprite.setGravity(0, -400);
+            sprite.setGravity(0, -600);
 
             sprite.anims.play('spriteDestroy');
             sprite.on(
@@ -267,11 +275,11 @@ export default class Preload extends Phaser.Scene {
             }
         });
         this.timerEventPacket = this.time.addEvent({
-            delay: 500,
-            timeScale: 0.5,
+            delay: 200,
+            timeScale: 0.2,
             loop: true,
             callback: e => {
-                this.createPackets(1);
+                this.createPackets(3);
             }
         });
 

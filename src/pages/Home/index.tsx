@@ -39,7 +39,7 @@ export default () => {
                 default: 'arcade',
                 arcade: {
                     debug: true,
-                    gravity: { y: 400 }
+                    gravity: { y: 600 }
                 }
             }
         };
