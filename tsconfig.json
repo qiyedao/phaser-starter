@@ -14,8 +14,24 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["src"],
+  "include": [
+    "mock/**/*",
+    "src/**/*",
+    "typings/**/*",
+    "typings.d.ts",
+    "config/**/*",
+    ".eslintrc.cjs",
+    ".stylelintrc.cjs",
+    ".prettierrc.cjs",
+    "jest.config.js",
+    "vite.config.ts"
+  ],
+  "exclude": ["node_modules", "dist"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
