@@ -1,7 +1,7 @@
 import 'phaser';
 
 class Packets extends Phaser.Physics.Arcade.Group {
-  constructor(scene) {
+  constructor(scene: Phaser.Scene) {
     super(scene.physics.world, scene);
 
     this.createMultiple({
@@ -16,7 +16,7 @@ class Packets extends Phaser.Physics.Arcade.Group {
     });
   }
 
-  firePacket(x, y, velocityX, velocityY) {
+  firePacket(x: any, y: any, velocityX: any, velocityY: any) {
     const packet = this.getFirstDead(false);
 
     if (packet) {

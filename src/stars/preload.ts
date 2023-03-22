@@ -77,8 +77,8 @@ export default class Preload extends Phaser.Scene {
 
     this.bg = this.add.tileSprite(0, 0, 719, 1280, 'bgPlan').setScale(1).setOrigin(0.215);
     this.cursorPointer = this.add.sprite(
-      this.game.config.width / 2,
-      this.game.config.height / 2,
+      (this.game.config.width as number) / 2,
+      (this.game.config.height as number) / 2,
       'cursorAnimation',
     );
     this.anims.create({
@@ -96,7 +96,11 @@ export default class Preload extends Phaser.Scene {
     this.cursorPointer.anims.play('cursorAnimation', true);
 
     this.daojishi = this.add
-      .sprite(this.game.config.width / 2, this.game.config.height / 2 - 300, 'daojishi')
+      .sprite(
+        (this.game.config.width as number) / 2,
+        (this.game.config.height as number) / 2 - 300,
+        'daojishi',
+      )
       .setScale(0.5);
     this.anims.create({
       key: 'daojishi',
@@ -115,7 +119,7 @@ export default class Preload extends Phaser.Scene {
   }
   refreshTime() {
     this.leftTime--;
-    const tem = this.leftTime;
+    const tem = this.leftTime.toString();
     this.leftTimeText.setText(tem);
     if (this.leftTime === 0) {
       this.scene.pause('preload');
@@ -130,7 +134,7 @@ export default class Preload extends Phaser.Scene {
 
     this.goOn.setVisible(false);
   }
-  createPacketModal(text) {
+  createPacketModal(text: string | string[]) {
     this.redpacketResult = this.add
       .sprite(rfuc(0), rfuc(130), 'redpacketResult')
       .setOrigin(0, 0)
@@ -138,12 +142,7 @@ export default class Preload extends Phaser.Scene {
       .setInteractive();
     console.log('this.redpacketResult', this.redpacketResult);
 
-    this.redpacketResult.on('pointerdown', (e) => {
-      console.log(e);
-
-      alert(123);
-    });
-    // this.redpacketResult.setOrigin(0, 0).setScale(0.5).setX(0);
+    this.redpacketResult.on('pointerdown', () => {});
 
     this.ticketText = this.add.text(0, rfuc(338), text, {
       color: '#ffe67d',
@@ -169,7 +168,7 @@ export default class Preload extends Phaser.Scene {
       this.scene.resume('preload');
     });
   }
-  handleHitPacket(sprite) {
+  handleHitPacket(sprite: any) {
     console.log('sprite', sprite);
 
     if (Math.random() < 1 / 2 && ids.length) {
@@ -195,7 +194,7 @@ export default class Preload extends Phaser.Scene {
       );
     }
   }
-  killSprite(sprite) {
+  killSprite(sprite: any) {
     this.tweens.add({
       targets: sprite,
       alpla: {
@@ -210,6 +209,7 @@ export default class Preload extends Phaser.Scene {
   }
   createPackets(num: number) {
     for (let i = 0; i < num; i++) {
+      // @ts-ignore
       this.redGroups.firePacket(
         Phaser.Math.FloatBetween(0, window.innerWidth),
         0,
@@ -238,11 +238,15 @@ export default class Preload extends Phaser.Scene {
     this.daojishi.setVisible(false);
     this.bgRainer = this.add.tileSprite(0, 0, 719, 1280, 'bgRainer').setScale(1).setOrigin(0.215);
     this.leftTime = time;
-    this.leftTimeText = this.add.text(this.game.config.width - 50, 0, this.leftTime, {
-      fill: '#FFF',
-      fontSize: '40px',
-      fontWeight: 'bolder',
-    });
+    this.leftTimeText = this.add.text(
+      (this.game.config.width as number) - 50,
+      0,
+      this.leftTime.toString(),
+      {
+        color: '#FFF',
+        fontSize: '40px',
+      },
+    );
 
     this.redGroups = new Packets(this);
     this.redGroups.children.iterate((child: any) => {
@@ -257,9 +261,8 @@ export default class Preload extends Phaser.Scene {
       delay: 1000,
       timeScale: 1.0,
       loop: true,
-      callback: (e) => {
+      callback: () => {
         this.refreshTime();
-        console.log(e, 'timerEventCountDown', new Date().toLocaleTimeString());
       },
     });
     this.timerEventPacket = this.time.addEvent({
