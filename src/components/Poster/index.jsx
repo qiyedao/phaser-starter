@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react';
 import { createRef } from 'react';
-
+import QRCode from 'qrcode';
 export class CanvasPoster extends Component {
   constructor(props) {
     super(props);
@@ -23,11 +23,9 @@ export class CanvasPoster extends Component {
   render() {
     return (
       <div className="canvas-poster">
-        <div
-          ref={this.canvasCodeDom}
-          style={{ display: this.state.debug ? 'block' : 'none' }}
-        ></div>
+        <canvas id="qrcode" style={{ display: this.state.debug ? 'block' : 'none' }}></canvas>
         <canvas
+          id="poster"
           height={this.props.drawData.height}
           width={this.props.drawData.width}
           className="canvas-poster-hidca"
@@ -61,29 +59,36 @@ export class CanvasPoster extends Component {
   }
 
   async drawArr() {
-    if (this.props.drawData.backgroundColor) {
-      this.state.context.save();
-      this.setState({
-        ctx: { ...this.state.ctx, fillStyle: this.props.drawData.backgroundColor },
-      });
-      this.state.context.fillRect(0, 0, this.props.drawData.width, this.props.drawData.height);
-      this.state.context.restore();
-    }
-    for (let i = 0; i < this.props.drawData.views.length; i += 1) {
-      if (this.props.drawData.views[i].type === 'image') {
-        // eslint-disable-next-line no-await-in-loop
-        await this.drawImg(this.props.drawData.views[i]);
-      } else if (this.props.drawData.views[i].type === 'text') {
-        this.drawText(this.props.drawData.views[i]);
-      } else if (this.props.drawData.views[i].type === 'rect') {
-        this.drawBlock(this.props.drawData.views[i]);
-      } else if (this.props.drawData.views[i].type === 'line') {
-        this.drawLine(this.props.drawData.views[i]);
-      } else if (this.props.drawData.views[i].type === 'qcode') {
-        // this.drawQcode(this.props.drawData.views[i]);
+    try {
+      if (this.props.drawData.backgroundColor) {
+        this.state.context.save();
+        this.setState({
+          ctx: { ...this.state.ctx, fillStyle: this.props.drawData.backgroundColor },
+        });
+        this.state.context.fillRect(0, 0, this.props.drawData.width, this.props.drawData.height);
+        this.state.context.restore();
       }
+      for (let i = 0; i < this.props.drawData.views.length; i += 1) {
+        if (this.props.drawData.views[i].type === 'image') {
+          // eslint-disable-next-line no-await-in-loop
+          await this.drawImg(this.props.drawData.views[i]);
+        } else if (this.props.drawData.views[i].type === 'text') {
+          this.drawText(this.props.drawData.views[i]);
+        } else if (this.props.drawData.views[i].type === 'rect') {
+          this.drawBlock(this.props.drawData.views[i]);
+        } else if (this.props.drawData.views[i].type === 'line') {
+          this.drawLine(this.props.drawData.views[i]);
+        } else if (this.props.drawData.views[i].type === 'qrcode') {
+          this.drawQcode(this.props.drawData.views[i]);
+          console.log('qrcode');
+        }
+      }
+      console.log('onSuccess');
+
+      this.props.onSuccess(this.canvas.current.toDataURL('image/png'));
+    } catch (error) {
+      console.log('error', error);
     }
-    this.props.onSuccess(this.canvas.current.toDataURL('image/png'));
   }
 
   // drawImg
@@ -172,7 +177,7 @@ export class CanvasPoster extends Component {
         textBaseline: baseLine,
         fillStyle: color,
         globalAlpha: opacity,
-        font: `normal ${fontWeight} ${fontSize}px ${fontFamily}`,
+        font: `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`,
       },
     });
     let textWidth = this.state.context.measureText(content).width;
@@ -326,9 +331,9 @@ export class CanvasPoster extends Component {
     padding = 5, // 是否有边距 0 为 没有
   }) {
     if (text === '') {
-      console.warn('您设置的二维码 text 字段内容不能为空'); // eslint-disable-line
+      alert('您设置的二维码 text 字段内容不能为空');
     } else {
-      this.canvasCodeDom.innerHTML = ''; // 重置
+      // document.getElementById('qrcode').getContext("2d").cearRect()// 重置
       if (padding !== 0) {
         // 如果没有边距
         this.drawBlock({
@@ -339,22 +344,11 @@ export class CanvasPoster extends Component {
           backgroundColor: '#fff',
         });
       }
-      new QRcode(this.canvasCodeDom, {
-        width,
-        height, // 高度
-        text, // 二维码内容
-        image: '',
-        correctLevel: QRcode.CorrectLevel.L,
-        background,
-        foreground,
+      const qrDom = document.getElementById('qrcode');
+      QRCode.toCanvas(qrDom, text, (error) => {
+        if (error) console.error(error);
+        this.state.context.drawImage(qrDom, left, top, width, height);
       });
-      this.state.context.drawImage(
-        this.canvasCodeDom.querySelector('canvas'),
-        left,
-        top,
-        width,
-        height,
-      );
     }
   }
 

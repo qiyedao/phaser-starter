@@ -51,12 +51,12 @@ export default () => {
           height: 126,
           top: 90,
           left: 15,
-          url: 'poster.jpg',
+          url: 'poster.png',
           radius: 6,
         },
         {
           type: 'text',
-          top: 270,
+          top: 180,
           left: 15,
           content: `查看更多内容，请扫码~`,
           fontSize: 12,
@@ -72,7 +72,7 @@ export default () => {
           height: 80,
           top: 240,
           left: 200,
-          content: 'https://blogapi.mylifed.cn/foxfly',
+          text: 'yiyi',
         },
       ],
     };
